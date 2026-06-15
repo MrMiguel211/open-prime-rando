@@ -575,10 +575,9 @@ class EchoVisorDoorType(VisorDoorType):
                     ),
                     sound=1003,
                     max_audible_distance=75.0,
-                    min_volume=0,
+                    min_volume=15,
                     max_volume=60,
                     surround_pan=SurroundPan(pan=0.0, surround_pan=1.0),
-                    loop=True,
                     play_always=True,
                     echo_visor_max_volume=127,
                 )
@@ -608,17 +607,29 @@ class EchoVisorDoorType(VisorDoorType):
                 )
             )
 
+            sound_loop_timer = default.add_instance_with(
+                Timer(
+                    editor_properties=EditorProperties(
+                        name="Play Echo Beacon Sound",
+                        transform=door_xfm,
+                    ),
+                    time=0.5,
+                    auto_start=True,
+                    auto_reset=True,
+                )
+            )
+
             for connection in actors.trigger.connections:
                 actors.trigger.remove_connection(connection)
                 timer.add_connection(State.Zero, connection.message, connection.target)
+
+            sound_loop_timer.add_connection(State.Zero, Message.Play, beacon_loop)
 
             actors.trigger.add_connection(State.Dead, Message.ResetAndStart, timer)
             actors.trigger.add_connection(State.Dead, Message.InternalMessage00, hud_hint)
             actors.trigger.add_connection(State.Dead, Message.Stop, beacon_loop)
             actors.trigger.add_connection(State.Dead, Message.Play, disrupted)
-
-            actors.visor_detector.add_connection(State.Entered, Message.Play, beacon_loop)
-            actors.visor_detector.add_connection(State.Exited, Message.Stop, beacon_loop)
+            actors.trigger.add_connection(State.Dead, Message.Deactivate, sound_loop_timer)
 
             actors.relay.add_connection(State.Active, Message.Deactivate, beacon_loop)
             actors.relay.add_connection(State.Active, Message.Deactivate, timer)
