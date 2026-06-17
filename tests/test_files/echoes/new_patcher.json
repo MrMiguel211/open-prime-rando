@@ -715,6 +715,11 @@
                             "dock_name": "North",
                             "old_door_type": "Normal",
                             "new_door_type": "SeekerMissile"
+                        },
+                        {
+                            "dock_name": "East1",
+                            "old_door_type": "Normal",
+                            "new_door_type": "DarkVisor"
                         }
                     ]
                 },
