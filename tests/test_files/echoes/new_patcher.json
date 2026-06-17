@@ -714,7 +714,7 @@
                         {
                             "dock_name": "North",
                             "old_door_type": "Normal",
-                            "new_door_type": "Sunburst"
+                            "new_door_type": "SeekerMissile"
                         }
                     ]
                 },
@@ -2018,6 +2018,80 @@
                                 "conversion": []
                             },
                             "progressive_stages": []
+                        }
+                    ]
+                },
+                {
+                    "mrea_id": 4121352562,
+                    "pickups": [
+                        {
+                            "location": {
+                                "type": "standard",
+                                "exclude_memo_from_removal": false,
+                                "original_model": "BeamAmmoExpansion",
+                                "connections": [],
+                                "removals": [
+                                    1901106,
+                                    1901091
+                                ],
+                                "collision_offset": {
+                                    "x": 0.0,
+                                    "y": 0.0,
+                                    "z": 1.0
+                                },
+                                "pickup": 1901100,
+                                "hud_memo": 1901102,
+                                "streamed_audio": 1901109,
+                                "sound": 1901110,
+                                "audio_fade": 1901101
+                            },
+                            "primary_stage": {
+                                "resources": [
+                                    {
+                                        "item": 45,
+                                        "amount": 20
+                                    }
+                                ],
+                                "appearance": {
+                                    "model_data": "DarkBeamAmmoExpansion",
+                                    "sound": 10057,
+                                    "jingle": {
+                                        "file_name": "/audio/itm_x_short_00.dsp",
+                                        "volume": 55
+                                    },
+                                    "hud_text": "Dark Ammo Expansion acquired!",
+                                    "scan": "Dark Ammo Expansion. Provides 20 Dark Ammo and 1 Item Percentage."
+                                },
+                                "conversion": []
+                            },
+                            "progressive_stages": []
+                        }
+                    ],
+                    "door_locks": [
+                        {
+                            "dock_name": "West",
+                            "old_door_type": "Missile",
+                            "new_door_type": "PowerBomb"
+                        },
+                        {
+                            "dock_name": "East_Lower",
+                            "old_door_type": "Normal",
+                            "new_door_type": "SeekerMissile"
+                        },
+                        {
+                            "dock_name": "East_Upper",
+                            "old_door_type": "Light",
+                            "new_door_type": "Sunburst"
+                        }
+                    ]
+                },
+                {
+                    "mrea_id": 4268351683,
+                    "door_locks": [
+                        {
+                            "dock_name": "East",
+                            "old_door_type": "Missile",
+                            "new_door_type": "PowerBomb"
                         }
                     ]
                 },

@@ -41,7 +41,7 @@ from retro_data_structures.properties.echoes.objects import (
 )
 
 from open_prime_rando.echoes.dock_lock_rando.map_icons import DoorMapIcon
-from open_prime_rando.echoes.vulnerabilities import resist_all_vuln
+from open_prime_rando.echoes.vulnerabilities import passthru_vuln, resist_all_vuln
 from open_prime_rando.patcher_editor import PatcherEditor
 
 
@@ -360,60 +360,53 @@ class SeekerBlastShieldDoorType(VanillaBlastShieldDoorType):
 
         default = area.get_layer("Default")
 
-        # immune instead of reflect so that it explodes on the lock
-        missile_immune = dataclasses.replace(resist_all_vuln, missile=WeaponVulnerability(damage_multiplier=0.0))
+        # Normal instead of reflect so that it explodes on the lock
+        missile_immune = dataclasses.replace(resist_all_vuln, missile=WeaponVulnerability(damage_multiplier=100.0))
         with actors.lock.edit_properties(Actor) as lock:
             lock.vulnerability = missile_immune
+            lock.health.health = 1000000.0
         with actors.door.edit_properties(Door) as door:
             door.vulnerability = missile_immune
 
         door_transform = actors.door.get_properties_as(Door).editor_properties.transform
+        door_collision_offset = Transform(
+            position=door_transform.position + Vector(-1.0, 0.0, 0.0).rotate(door_transform.rotation)
+        )
 
-        # TODO: try using a sequencetimer to squeeze one fewer instance out of this
         timer = default.add_instance_with(
             Timer(editor_properties=EditorProperties(name="Button Control", transform=door_transform), time=0.75)
         )
 
-        timer_reset = default.add_instance_with(
-            Timer(editor_properties=EditorProperties(name="Button Reset", transform=door_transform), time=0.01)
+        hit_counter = default.add_instance_with(
+            Counter(
+                editor_properties=EditorProperties(name="Missile Hits", transform=door_transform),
+                initial_count=0,
+                max_count=5,
+            )
         )
 
-        # create 5 triggers so that you can have 5 lock-ons
-        # TODO: only use 2 triggers in low memory mode and just accept it being more jank?
-        # 30.01 health because splash damage is inconsistent. missiles do 30 damage
-        # so this guarantees you need at least 2 missiles at once to break it
-        triggers = [
-            default.add_instance_with(self.create_trigger(f"Bridge Button {i}", door_transform, 30.01))
-            for i in range(5)
-        ]
-        main_trigger = triggers[0]
-        # TODO: repurpose one of the big triggers for this to save an instance
-        mini_trigger = default.add_instance_with(
-            self.create_trigger("Bridge Button Mini", door_transform, 1.0, seeker_lock_on=False)
-        )
+        lock_on_trigger = default.add_instance_with(self.create_trigger("Lock-On Trigger", door_collision_offset, 1.0))
 
-        # start a timer when the tiny trigger dies. stop it if the main trigger dies
-        mini_trigger.add_connection(State.Dead, Message.ResetAndStart, timer)
-        main_trigger.add_connection(State.Dead, Message.Stop, timer)
-        for trigger in triggers:
-            timer.add_connection(State.Zero, Message.Deactivate, trigger)
+        # Make missile pass through
+        with lock_on_trigger.edit_properties(DamageableTriggerOrientated) as trigger_props:
+            trigger_props.vulnerability = passthru_vuln
+            trigger_props.orbitable = True
 
-        # if the timer counts all the way down, reset the triggers
-        timer.add_connection(State.Zero, Message.ResetAndStart, timer_reset)
-        timer_reset.add_connection(State.Zero, Message.Activate, mini_trigger)
-        for trigger in triggers:
-            timer_reset.add_connection(State.Zero, Message.Activate, trigger)
+        # start a timer when lock is shot
+        actors.lock.add_connection(State.Damage, Message.ResetAndStart, timer)
+        actors.lock.add_connection(State.Damage, Message.Increment, hit_counter)
 
-        # move the lock's connections to the trigger, since it's the thing that dies now
-        for connection in actors.lock.connections:
-            actors.lock.remove_connection(connection)
-            main_trigger.add_connection(connection.state, connection.message, connection.target)
+        # if the timer counts all the way down, reset the lock health and counter
+        timer.add_connection(State.Zero, Message.Reset, hit_counter)
+        timer.add_connection(State.Zero, Message.Reset, actors.lock)
 
-        for trigger in triggers:
-            actors.relay.add_connection(State.Active, Message.Deactivate, trigger)
-        actors.relay.add_connection(State.Active, Message.Deactivate, mini_trigger)
+        # when counter reaches max (lock hit 5 times) kill door lock
+        hit_counter.add_connection(State.MaxReached, Message.Kill, actors.lock)
+        hit_counter.add_connection(State.MaxReached, Message.Stop, timer)
+
         actors.relay.add_connection(State.Active, Message.Deactivate, timer)
-        actors.relay.add_connection(State.Active, Message.Deactivate, timer_reset)
+        actors.relay.add_connection(State.Active, Message.Deactivate, hit_counter)
+        actors.relay.add_connection(State.Active, Message.Deactivate, lock_on_trigger)
 
         return actors
 

@@ -3,6 +3,7 @@ import dataclasses
 from retro_data_structures.properties.echoes.archetypes.DamageVulnerability import DamageVulnerability
 from retro_data_structures.properties.echoes.archetypes.WeaponVulnerability import Effect, WeaponVulnerability
 
+passthru = WeaponVulnerability(damage_multiplier=0, effect=Effect.PassThru)
 reflect = WeaponVulnerability(damage_multiplier=0, effect=Effect.Reflect)
 vulnerable = WeaponVulnerability(damage_multiplier=100, effect=Effect.Normal)
 immune = WeaponVulnerability(damage_multiplier=0, effect=Effect.Normal, ignore_radius=True)
@@ -58,4 +59,23 @@ normal_vuln = dataclasses.replace(
     missile=vulnerable,
     bomb=vulnerable,
     power_bomb=vulnerable,
+)
+
+passthru_vuln = dataclasses.replace(
+    resist_all_vuln,
+    power=passthru,
+    dark=passthru,
+    light=passthru,
+    annihilator=passthru,
+    power_charge=passthru,
+    entangler=passthru,
+    light_blast=passthru,
+    sonic_boom=passthru,
+    super_missle=passthru,
+    black_hole=passthru,
+    sunburst=passthru,
+    imploder=passthru,
+    missile=passthru,
+    bomb=passthru,
+    power_bomb=passthru,
 )
