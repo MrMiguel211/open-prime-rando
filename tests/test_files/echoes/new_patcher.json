@@ -1114,7 +1114,8 @@
                         {
                             "source_dock_name": "VirtualNorth",
                             "target_mrea_id": 3455003633,
-                            "target_dock_name": "VirtualNorth1"
+                            "target_dock_name": "VirtualNorth1",
+                            "portal_scan_destination": "Ing Windchamber"
                         }
                     ]
                 },
@@ -1241,7 +1242,8 @@
                         {
                             "source_dock_name": "VirtualNorth",
                             "target_mrea_id": 2909835645,
-                            "target_dock_name": "VirtualNorth1"
+                            "target_dock_name": "VirtualNorth1",
+                            "portal_scan_destination": "Grand Windchamber"
                         }
                     ]
                 },
@@ -1505,7 +1507,8 @@
                         {
                             "source_dock_name": "VirtualNorth1",
                             "target_mrea_id": 67496868,
-                            "target_dock_name": "VirtualNorth"
+                            "target_dock_name": "VirtualNorth",
+                            "portal_scan_destination": "Plain of Dark Worship"
                         }
                     ]
                 },
@@ -1515,7 +1518,8 @@
                         {
                             "source_dock_name": "VirtualNorth1",
                             "target_mrea_id": 1263425809,
-                            "target_dock_name": "VirtualNorth"
+                            "target_dock_name": "VirtualNorth",
+                            "portal_scan_destination": "Temple Assembly Site"
                         }
                     ]
                 }
@@ -3191,6 +3195,28 @@
                             "progressive_stages": []
                         }
                     ]
+                },
+                {
+                    "mrea_id": 734872743,
+                    "portals": [
+                        {
+                            "source_dock_name": "VirtualNorth1",
+                            "target_mrea_id": 3212793644,
+                            "target_dock_name": "VirtualNorth1",
+                            "portal_scan_destination": "Portal Site"
+                        }
+                    ]
+                },
+                {
+                    "mrea_id": 3212793644,
+                    "portals": [
+                        {
+                            "source_dock_name": "VirtualNorth1",
+                            "target_mrea_id": 734872743,
+                            "target_dock_name": "VirtualNorth1",
+                            "portal_scan_destination": "Portal Terminal"
+                        }
+                    ]
                 }
             ]
         },
@@ -3242,23 +3268,92 @@
                             "primary_stage": {
                                 "resources": [
                                     {
-                                        "item": 4,
-                                        "amount": 1
+                                        "item": 14,
+                                        "amount": 20
                                     }
                                 ],
                                 "appearance": {
-                                    "model_data": "SuperMissile",
+                                    "model_data": "LightSuit",
                                     "sound": 10057,
                                     "jingle": {
-                                        "file_name": "/audio/itm_x_long_00.dsp",
-                                        "volume": 71
+                                        "file_name": "/audio/itm_x_short_00.dsp",
+                                        "volume": 55
                                     },
-                                    "hud_text": "Super Missile acquired!",
-                                    "scan": "Super Missile."
+                                    "hud_text": "Light Suit acquired!",
+                                    "scan": "Light Suit."
                                 },
                                 "conversion": []
                             },
-                            "progressive_stages": []
+                            "progressive_stages": [
+                                {
+                                    "required_item": 14,
+                                    "resources": [
+                                        {
+                                            "item": 1,
+                                            "amount": 1
+                                        },
+                                        {
+                                            "item": 45,
+                                            "amount": 50
+                                        }
+                                    ],
+                                    "appearance": {
+                                        "model_data": "DarkBeam",
+                                        "sound": 10057,
+                                        "jingle": {
+                                            "file_name": "/audio/itm_x_short_00.dsp",
+                                            "volume": 55
+                                        },
+                                        "hud_text": "Dark Beam acquired!",
+                                        "scan": "Dark Beam."
+                                    },
+                                    "conversion": []
+                                },
+                                {
+                                    "required_item": 1,
+                                    "resources": [
+                                        {
+                                            "item": 2,
+                                            "amount": 1
+                                        },
+                                        {
+                                            "item": 46,
+                                            "amount": 50
+                                        }
+                                    ],
+                                    "appearance": {
+                                        "model_data": "LightBeam",
+                                        "sound": 10057,
+                                        "jingle": {
+                                            "file_name": "/audio/itm_x_short_00.dsp",
+                                            "volume": 55
+                                        },
+                                        "hud_text": "Light Beam acquired!",
+                                        "scan": "Light Beam."
+                                    },
+                                    "conversion": []
+                                },
+                                {
+                                    "required_item": 2,
+                                    "resources": [
+                                        {
+                                            "item": 3,
+                                            "amount": 1
+                                        }
+                                    ],
+                                    "appearance": {
+                                        "model_data": "AnnihilatorBeam",
+                                        "sound": 10057,
+                                        "jingle": {
+                                            "file_name": "/audio/itm_x_short_00.dsp",
+                                            "volume": 55
+                                        },
+                                        "hud_text": "Annihilator Beam acquired!",
+                                        "scan": "Annihilator Beam."
+                                    },
+                                    "conversion": []
+                                }
+                            ]
                         }
                     ],
                     "translator_gates": [
@@ -3280,6 +3375,33 @@
                             },
                             "conditional_relay": "Does Player Have Correct Translator?",
                             "translator": "violet"
+                        }
+                    ],
+                    "door_locks": [
+                        {
+                            "dock_name": "WestGenerator",
+                            "old_door_type": "SuperMissile",
+                            "new_door_type": "Sunburst"
+                        },
+                        {
+                            "dock_name": "East",
+                            "old_door_type": "SuperMissile",
+                            "new_door_type": "EchoVisor"
+                        },
+                        {
+                            "dock_name": "EastTop",
+                            "old_door_type": "Dark",
+                            "new_door_type": "ScrewAttack"
+                        },
+                        {
+                            "dock_name": "West",
+                            "old_door_type": "SuperMissile",
+                            "new_door_type": "DarkVisor"
+                        },
+                        {
+                            "dock_name": "NorthDoor",
+                            "old_door_type": "Light",
+                            "new_door_type": "SonicBoom"
                         }
                     ]
                 },
@@ -5106,7 +5228,7 @@
         }
     ],
     "suit_replacement": {
-        "varia": "player1",
+        "varia": "player4",
         "dark": "player2",
         "light": "player3"
     },
