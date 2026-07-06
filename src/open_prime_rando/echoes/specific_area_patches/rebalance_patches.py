@@ -205,7 +205,7 @@ def hive_access_tunnel_translator_gate(editor: PatcherEditor, mlvl: Mlvl, area: 
         light_copy_source_room.get_instance("Luminoth Light Support").get_properties()
     )
     with dynamic_light.edit_properties(DynamicLight) as light_props:
-        light_props.editor_properties.transform.name = "Gate Light Support"
+        light_props.editor_properties.name = "Gate Light Support"
         light_props.editor_properties.transform.position = Vector(24.7, -207.2, -41.0)
         light_props.color = Color(0.980392, 0.952941, 0.870588, 0.0)
     dynamic_light.add_connection(State.Play, Message.Activate, gate)
@@ -763,7 +763,7 @@ def transport_c_access_crystal(editor: PatcherEditor, mlvl: Mlvl, area: Area) ->
         light_copy_source_room.get_instance("Luminoth Light Support").get_properties()
     )
     with dynamic_light.edit_properties(DynamicLight) as light:
-        light.editor_properties.transform.name = "Statue Light Support"
+        light.editor_properties.name = "Statue Light Support"
         light.editor_properties.transform.position = Vector(-98.0, -61.7, -18.0)
         light.color = Color(0.858824, 0.729412, 0.584314, 0.0)
 
