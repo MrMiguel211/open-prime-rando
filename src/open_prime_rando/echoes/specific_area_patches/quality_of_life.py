@@ -368,10 +368,14 @@ def sky_temple_gateway_cinematic_skips(editor: PatcherEditor, mlvl: Mlvl, area: 
     be skippable and warp to credits room if done so.
     """
     default = area.get_layer("Default")
+
+    # Add a new layer just for the teleporters, otherwise
+    # room takes a little longer to load into
     warps_layer = area.add_layer("Ending Teleporters", active=False)
     ds_death_start = area.get_instance("DS Death Cinema Start")
     game_end_part1_end = area.get_instance(0x2A036B)
 
+    # Required Objects
     teleporters_controller = default.add_instance_with(
         ScriptLayerController(
             editor_properties=EditorProperties(
@@ -386,6 +390,8 @@ def sky_temple_gateway_cinematic_skips(editor: PatcherEditor, mlvl: Mlvl, area: 
         )
     )
 
+    # Using a CinematicSkip Function allows for things to
+    # happen only if you skipped a cutscene
     cinematic_skip = default.add_instance_with(
         SpecialFunction(
             editor_properties=EditorProperties(
@@ -399,6 +405,7 @@ def sky_temple_gateway_cinematic_skips(editor: PatcherEditor, mlvl: Mlvl, area: 
         )
     )
 
+    # Less than 75% items check
     ending_check1 = default.add_instance_with(
         SpecialFunction(
             editor_properties=EditorProperties(
@@ -412,6 +419,7 @@ def sky_temple_gateway_cinematic_skips(editor: PatcherEditor, mlvl: Mlvl, area: 
         )
     )
 
+    # Greater than 75% items check
     ending_check2 = default.add_instance_with(
         SpecialFunction(
             editor_properties=EditorProperties(
@@ -426,6 +434,7 @@ def sky_temple_gateway_cinematic_skips(editor: PatcherEditor, mlvl: Mlvl, area: 
         )
     )
 
+    # If over 75%, take away Dark Suit for ZSS cutscene
     take_away_dark_suit = default.add_instance_with(
         SpecialFunction(
             editor_properties=EditorProperties(
@@ -442,6 +451,7 @@ def sky_temple_gateway_cinematic_skips(editor: PatcherEditor, mlvl: Mlvl, area: 
         )
     )
 
+    # If over 75%, take away Light Suit for ZSS cutscene
     take_away_light_suit = default.add_instance_with(
         SpecialFunction(
             editor_properties=EditorProperties(
@@ -457,6 +467,7 @@ def sky_temple_gateway_cinematic_skips(editor: PatcherEditor, mlvl: Mlvl, area: 
         )
     )
 
+    # Teleporter to Credits room
     credits_warp = warps_layer.add_instance_with(
         WorldTeleporter(
             editor_properties=EditorProperties(
@@ -472,6 +483,7 @@ def sky_temple_gateway_cinematic_skips(editor: PatcherEditor, mlvl: Mlvl, area: 
         )
     )
 
+    # Teleporter to ZSS Cutscene room
     bad_ending_warp = warps_layer.add_instance_with(
         WorldTeleporter(
             editor_properties=EditorProperties(
@@ -487,6 +499,7 @@ def sky_temple_gateway_cinematic_skips(editor: PatcherEditor, mlvl: Mlvl, area: 
         )
     )
 
+    # Make the following cameras be skippable
     cameras = [
         "DS_3_Death_01",
         "DS_3_Death_02",
@@ -523,15 +536,24 @@ def sky_temple_gateway_cinematic_skips(editor: PatcherEditor, mlvl: Mlvl, area: 
             camera_props.flags_cinematic_camera &= ~FlagsCinematicCamera.FinishCineSkip
             camera_props.flags_cinematic_camera |= FlagsCinematicCamera.CinematicSkip
 
+    # Load Teleporters layer once death cutscene is done loading
     area.get_instance("Load Dark Samus 3 Battle Death").add_connection(
         State.Arrived, Message.Increment, teleporters_controller
     )
     area.get_instance("Begin Dark Samus Battle3 Death").add_connection(State.Open, Message.Play, teleporters_controller)
+
+    # Increment/Decrement Cinematic Skip on cutscene start/end
     ds_death_start.add_connection(State.Zero, Message.Increment, cinematic_skip)
     game_end_part1_end.add_connection(State.Zero, Message.Decrement, cinematic_skip)
+
+    # Fire % Checks when skipped cutscenes
     cinematic_skip.add_connection(State.Zero, Message.Action, ending_check1)
     cinematic_skip.add_connection(State.Zero, Message.Action, ending_check2)
+
+    # Warp to Credits if below 75% on cutscene skip
     ending_check1.add_connection(State.Zero, Message.SetToZero, credits_warp)
+
+    # Warp to ZSS Cutscene if or above 75% on cutscene skip
     ending_check2.add_connection(State.Zero, Message.Action, take_away_dark_suit)
     ending_check2.add_connection(State.Zero, Message.Action, take_away_light_suit)
     ending_check2.add_connection(State.Zero, Message.SetToZero, bad_ending_warp)
@@ -736,8 +758,12 @@ def game_end_part2_cinematic_skips(editor: PatcherEditor, mlvl: Mlvl, area: Area
     cinematic_skip.add_connection(State.Zero, Message.Action, ending_check1)
     cinematic_skip.add_connection(State.Zero, Message.Action, ending_check2)
     ending_check1.add_connection(State.Zero, Message.SetToZero, credits_warp)
+
+    # Deactivate all the cameras upon skip otherwise music stays playing
     for cameras_deactivate in cameras:
         ending_check2.add_connection(State.Zero, Message.Deactivate, area.get_instance(cameras_deactivate))
+
+    # Dump Cinema layer and start loading next room instead of warping if ending 2 passed
     ending_check2.add_connection(State.Zero, Message.Activate, loading_camera)
     ending_check2.add_connection(State.Zero, Message.Stop, loading_camera)
     ending_check2.add_connection(State.Zero, Message.Stop, aether_movie)
@@ -801,11 +827,14 @@ def game_end_part3_cinematic_skips(editor: PatcherEditor, mlvl: Mlvl, area: Area
         with area.get_instance(camera_ids).edit_properties(Camera) as camera_props:
             camera_props.flags_cinematic_camera |= FlagsCinematicCamera.CinematicSkip
 
+    # If Ending 2 passed, make the starting cameras interrupt the cutscene skip
     for starting_cameras in (0x35005C, 0x350014):
         with area.get_instance(starting_cameras).edit_properties(Camera) as camera_flags:
             camera_flags.flags_cinematic_camera |= FlagsCinematicCamera.CinematicSkip
             camera_flags.flags_cinematic_camera |= FlagsCinematicCamera.FinishCineSkip
 
+    # Delay Increment of CinematicSkip Function a little bit otherwise
+    # it will fire before the cutscene skip can be interrupted
     with departure_sequence.edit_properties(SequenceTimer) as sequence_timer:
         sequence_timer.sequence_connections.append(
             SequenceConnection(
@@ -831,6 +860,9 @@ def game_end_part4_cinematic_skips(editor: PatcherEditor, mlvl: Mlvl, area: Area
     cinema_end = area.get_instance("Cinema End")
     cine_sequence_timer = area.get_instance("End game Space")
 
+    # Normally the Credits play in this room at the end of the cutscene, but
+    # we want Credits to be able to play immediately if warped to this room, so
+    # Credits is being changed from this cutscene's end to next room's cutscene start.
     with credits.edit_properties(SpecialFunction) as credits:
         credits.editor_properties.active = False
 
@@ -873,6 +905,8 @@ def game_end_part4_cinematic_skips(editor: PatcherEditor, mlvl: Mlvl, area: Area
         )
     )
 
+    # Start loading next room immediately instead of at
+    # end, so Cinema layer can be dumped upon skip
     with cine_sequence_timer.edit_properties(SequenceTimer) as sequence_timer:
         sequence_timer.sequence_connections[15].activation_times = [0.0]
 
@@ -932,6 +966,7 @@ def game_end_part5_cinematic_skips(editor: PatcherEditor, mlvl: Mlvl, area: Area
         )
     )
 
+    # Upon room visible, fire Credits, then once those are done fire the ending checks.
     credits_and_endings_delay = default.add_instance_with(
         SequenceTimer(
             editor_properties=EditorProperties(
@@ -968,11 +1003,14 @@ def game_end_part5_cinematic_skips(editor: PatcherEditor, mlvl: Mlvl, area: Area
     with area.get_instance("Camera 001").edit_properties(Camera) as camera_props:
         camera_props.flags_cinematic_camera |= FlagsCinematicCamera.CinematicSkip
 
+    # Remove Ending checks on player entering room
+    # as those are now managed by the SequenceTimer
     spawn_connections = list(spawn.connections)
     spawn.remove_connection(spawn_connections[0])
     spawn.remove_connection(spawn_connections[1])
     spawn.remove_connection(spawn_connections[2])
 
+    # Fire Credits and Ending timer on player entering room
     spawn.add_connection(State.Zero, Message.Activate, loading_camera)
     spawn.add_connection(State.Zero, Message.Start, credits_and_endings_delay)
 
