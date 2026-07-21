@@ -84,9 +84,9 @@ def patch_logbook(editor: PatcherEditor, version: EchoesDolVersion, configuratio
     - Renames and reorganizes the lore entries for usage as hints
     """
 
-    tree = editor.get_file(0x95B61279, Tree)
+    tree = editor.get_file(_LOGBOOK_TREE, Tree)
 
-    hierarchy = editor.get_file(0xDD79DC2A, Hier)
+    hierarchy = editor.get_file(_LOGBOOK_HIERARCHY, Hier)
     hierarchy_entries = list(hierarchy.entries)
 
     _patch_inventory_slots(editor, tree)
