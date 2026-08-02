@@ -71,7 +71,7 @@ def register_all(area_patcher: AreaPatcher) -> None:
         main_reactor_keybearer,
         gfmc_compound_ship_pickup,
         judgment_pit_gfmc_layer,
-        hive_chamber_a_dmt_active,
+        hive_chamber_a_changes,
         agon_temple_dmt_layer,
         dark_oasis_ing_cache,
         security_station_b_activate_gates,
@@ -461,13 +461,55 @@ def judgment_pit_gfmc_layer(editor: PatcherEditor, mlvl: Mlvl, area: Area) -> No
 
 
 @decorate_patcher(TEMPLE_GROUNDS_MLVL, temple_grounds.HIVE_CHAMBER_A_MREA)
-def hive_chamber_a_dmt_active(editor: PatcherEditor, mlvl: Mlvl, area: Area) -> None:
+def hive_chamber_a_changes(editor: PatcherEditor, mlvl: Mlvl, area: Area) -> None:
     """
-    Makes the Dark Missile Trooper layers active by default, removing the Bomb Guardian requirement.
+    Makes the Dark Missile Trooper layers active by default, removing
+    the Bomb Guardian requirement. Remove the first pass gate elements.
     """
-
     area.get_layer("Missile Trooper").active = True
     area.get_layer("Missile trooper gate").active = True
+
+    default = area.get_layer("Default")
+    dim_scan_holo_relay = area.get_instance(0x6007E)
+
+    auto_activate_relays = default.add_instance_with(
+        Timer(
+            editor_properties=EditorProperties(
+                name="Auto-Activate Memory Relays",
+                transform=Transform(
+                    position=Vector(38.0, -258.0, -105.0),
+                    scale=Vector(2.0, 2.0, 2.0),
+                ),
+            ),
+            time=0.001,
+            auto_start=True,
+        )
+    )
+
+    # Make relays not be delayed action
+    memory_relays = ["Deactivate Scan Tutorial", "Gate And Locks Open", "already scanned"]
+    for relays in memory_relays:
+        with area.get_instance(relays).edit_properties(MemoryRelay) as relay_props:
+            relay_props.delayed_action = False
+
+        # Activate memory relays immediately
+        auto_activate_relays.add_connection(State.Zero, Message.Activate, area.get_instance(relays))
+
+    auto_activate_relays.add_connection(State.Zero, Message.Activate, dim_scan_holo_relay)
+
+    # Move Zombies Appear to ensure music always plays
+    area.move_instance("Zombies Appear", "Missile Trooper")
+
+    # Make DMT also play pre-umos music
+    dmt = area.get_instance("DarkTrooper _Missile")
+    pre_umos_music = area.get_instance("Moth Temple Landing Site")
+    dmt.add_connection(State.DeathRattle, Message.Play, pre_umos_music)
+
+    # Prevent Fade Music timer from resuming DMT Music
+    fade_music_timer = area.get_instance(0x6023B)
+    post_umos_music = area.get_instance("Splinter Hive - Inside")
+    fade_music_timer.add_connection(State.Zero, Message.Play, pre_umos_music)
+    fade_music_timer.add_connection(State.Zero, Message.Play, post_umos_music)
 
 
 @decorate_patcher(AGON_WASTES_MLVL, agon_wastes.AGON_TEMPLE_MREA)
